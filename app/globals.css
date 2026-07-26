@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design tokens — apple-design skill applied
+   Runtime CSS variables (light/dark) mapped into Tailwind via
+   @theme inline so utilities like `bg-surface` resolve at runtime.
+   ============================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces (light) */
+  --background: #f4f4f6;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --material: rgba(250, 250, 252, 0.72); /* translucent chrome (§12) */
+  --material-strong: rgba(250, 250, 252, 0.9);
+
+  /* Text (iOS label hierarchy) */
+  --foreground: #1d1d1f;
+  --secondary: rgba(60, 60, 67, 0.6);
+  --tertiary: rgba(60, 60, 67, 0.34);
+  --separator: rgba(60, 60, 67, 0.12);
+
+  /* Accent + semantic */
+  --accent: #0071e3;
+  --accent-fg: #ffffff;
+  --success: #1a9c4b;
+  --warn: #c47700;
+  --danger: #e0322a;
+
+  /* Necessity ramp (1 → 5): calm gray to committed blue */
+  --n1: rgba(60, 60, 67, 0.28);
+  --n5: #0071e3;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 4px 12px rgba(0, 0, 0, 0.1), 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  /* Radii — generous, continuous feel */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+
+  /* System font: ships optical sizing + JP legibility (§15) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui,
+    "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --material: rgba(30, 30, 32, 0.6);
+    --material-strong: rgba(30, 30, 32, 0.86);
+
+    --foreground: #f5f5f7;
+    --secondary: rgba(235, 235, 245, 0.6);
+    --tertiary: rgba(235, 235, 245, 0.3);
+    --separator: rgba(235, 235, 245, 0.14);
+
+    --accent: #0a84ff;
+    --accent-fg: #ffffff;
+    --success: #30d158;
+    --warn: #ff9f0a;
+    --danger: #ff453a;
+
+    --n1: rgba(235, 235, 245, 0.28);
+    --n5: #0a84ff;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-float: 0 6px 16px rgba(0, 0, 0, 0.5), 0 20px 60px rgba(0, 0, 0, 0.6);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-separator: var(--separator);
+  --color-accent: var(--accent);
+  --color-accentfg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --font-sans: var(--font-sans);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  /* Scale layout with the user's text size — spacing uses rem (§15) */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ============================================================
+   Typography scale — size-specific tracking & leading (§15)
+   Large text: negative tracking + tight leading.
+   Body/small: near-0 or slightly positive tracking, looser leading.
+   ============================================================ */
+
+.t-display {
+  font-size: clamp(2.5rem, 9vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.t-title {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+}
+.t-headline {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 620;
+}
+.t-body {
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.t-callout {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  letter-spacing: 0.004em;
+}
+.t-subhead {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: var(--secondary);
+}
+.t-caption {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--secondary);
+}
+.tabnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Materials & depth (§12)
+   ============================================================ */
+
+.material-chrome {
+  background: var(--material);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Scroll edge fade where floating chrome meets content (§12) */
+.edge-fade::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--background) 60%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ============================================================
+   Press feedback — instant, on pointer-down (§1)
+   ============================================================ */
+
+.pressable {
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 160ms ease, opacity 160ms ease;
+  touch-action: manipulation;
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Vaul bottom sheet
+   ============================================================ */
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 50;
+}
+.sheet-content {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 51;
+  margin: 0 auto;
+  max-width: 560px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--material-strong);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-top-left-radius: var(--r-xl);
+  border-top-right-radius: var(--r-xl);
+  border: 1px solid var(--separator);
+  border-bottom: none;
+  box-shadow: var(--shadow-float);
+  outline: none;
+}
+.sheet-grabber {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--tertiary);
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+}
+
+/* Inputs */
+.field {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--separator);
+  border-radius: var(--r-md);
+  padding: 0.75rem 0.875rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.field::placeholder {
+  color: var(--tertiary);
+}
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ============================================================
+   Accessibility fallbacks (§14)
+   ============================================================ */
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --material: var(--surface);
+    --material-strong: var(--surface);
+  }
+  .material-chrome,
+  .sheet-content {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --separator: color-mix(in srgb, var(--foreground) 42%, transparent);
+    --secondary: color-mix(in srgb, var(--foreground) 78%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active {
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
