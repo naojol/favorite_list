@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { saveMonthlyBudget } from "@/app/actions";
+import { formatThousandsInput } from "@/lib/priority";
 import { Button } from "./ui/Button";
 import { Sheet } from "./ui/Sheet";
 
@@ -45,7 +46,7 @@ function SettingsForm({
   onDone: () => void;
 }) {
   const [value, setValue] = useState(
-    monthlyBudget != null ? String(monthlyBudget) : ""
+    monthlyBudget != null ? formatThousandsInput(String(monthlyBudget)) : ""
   );
   const [saving, setSaving] = useState(false);
 
@@ -77,8 +78,8 @@ function SettingsForm({
             inputMode="numeric"
             placeholder="例：30000"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className="field pl-9 tabnum"
+            onChange={(e) => setValue(formatThousandsInput(e.target.value))}
+            className="field field-yen tabnum"
           />
         </div>
         <p className="t-caption text-tertiary">

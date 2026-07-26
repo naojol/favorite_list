@@ -285,6 +285,10 @@ body {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
+/* ¥ プレフィックス分の左パディング（.field の padding ショートハンドを確実に上書き） */
+.field-yen {
+  padding-left: 2rem;
+}
 
 /* ============================================================
    Accessibility fallbacks (§14)

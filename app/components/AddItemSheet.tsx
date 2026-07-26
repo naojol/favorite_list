@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { addItem, editItem, fetchProductMeta } from "@/app/actions";
 import { cn } from "@/lib/cn";
+import { formatThousandsInput } from "@/lib/priority";
 import type { WishlistItem } from "@/lib/types";
 import { Button } from "./ui/Button";
 import { NecessityRating } from "./ui/NecessityRating";
@@ -68,7 +69,7 @@ function AddItemForm({
   const [url, setUrl] = useState(initial?.url ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [price, setPrice] = useState(
-    initial?.price != null ? String(initial.price) : ""
+    initial?.price != null ? formatThousandsInput(String(initial.price)) : ""
   );
   const [currency, setCurrency] = useState(initial?.currency ?? "JPY");
   const [imageUrl, setImageUrl] = useState<string | null>(
@@ -240,8 +241,8 @@ function AddItemForm({
             inputMode="numeric"
             placeholder="未入力"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="field pl-9 tabnum"
+            onChange={(e) => setPrice(formatThousandsInput(e.target.value))}
+            className="field field-yen tabnum"
           />
         </div>
       </div>
@@ -266,6 +267,8 @@ function AddItemForm({
             id="wl-date"
             type="date"
             value={wantBy}
+            min="2000-01-01"
+            max="2100-12-31"
             onChange={(e) => setWantBy(e.target.value)}
             className="field flex-1"
           />

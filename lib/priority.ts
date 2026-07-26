@@ -26,6 +26,13 @@ export function formatNum(n: number | null | undefined): string {
   return numFmt.format(n);
 }
 
+/** 入力中の文字列から数字だけ抽出して3桁区切りに（"322900" → "322,900"） */
+export function formatThousandsInput(raw: string): string {
+  const digits = raw.replace(/[^\d]/g, "");
+  if (!digits) return "";
+  return numFmt.format(Number(digits));
+}
+
 /* ---------- 日付 ---------- */
 
 /** ローカル午前0時（時刻を切り捨てた Date） */
