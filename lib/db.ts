@@ -70,6 +70,8 @@ function getSql(): Sql {
     g.__wlSql = postgres(process.env.DATABASE_URL as string, {
       // Supabase の Transaction pooler(6543)ではプリペアドステートメント非対応
       prepare: false,
+      // Supabase / Neon / Vercel Postgres など、クラウド Postgres は TLS 必須
+      ssl: "require",
       idle_timeout: 20,
       max: 3,
       onnotice: () => {},
