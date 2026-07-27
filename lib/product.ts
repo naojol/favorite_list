@@ -277,6 +277,71 @@ function emptyMeta(url: string, error?: string): ProductMeta {
   };
 }
 
+/**
+ * レスポンスの文字コードを判定する。
+ * ① HTTPヘッダの charset → ② <meta charset> のスニッフ → ③ utf-8。
+ * （res.text() は仕様上つねに UTF-8 デコードするため、Shift_JIS 等の
+ *   日本語サイトを正しく読むには自前でバイト列をデコードする必要がある）
+ */
+export function detectCharset(
+  contentType: string | null,
+  buf: Buffer
+): string {
+  const fromHeader = contentType
+    ? /charset\s*=\s*["']?([\w-]+)/i.exec(contentType)?.[1]
+    : undefined;
+  if (fromHeader) return fromHeader.toLowerCase();
+
+  // 先頭部分を latin1 で覗いて <meta> の charset を探す（ASCII 部分は保持される）
+  const head = buf.subarray(0, 4096).toString("latin1");
+  const metaCharset =
+    /<meta[^>]+charset\s*=\s*["']?([\w-]+)/i.exec(head)?.[1] ??
+    /<meta[^>]+content\s*=\s*["'][^"']*charset\s*=\s*([\w-]+)/i.exec(head)?.[1];
+  if (metaCharset) return metaCharset.toLowerCase();
+
+  return "utf-8";
+}
+
+function tryDecode(buf: Buffer, charset: string): string | null {
+  try {
+    return new TextDecoder(charset, { fatal: false }).decode(buf);
+  } catch {
+    return null; // 未知のラベルは RangeError
+  }
+}
+
+/** U+FFFD（置換文字）の割合 — デコード失敗の目安 */
+function badRatio(s: string): number {
+  if (!s.length) return 0;
+  let n = 0;
+  for (let i = 0; i < s.length; i++) if (s.charCodeAt(i) === 0xfffd) n++;
+  return n / s.length;
+}
+
+/**
+ * バイト列を指定文字コードでデコード。未知ラベルは utf-8 にフォールバック。
+ * charset 未宣言(=utf-8 既定)で大量に化けている場合は、保険として
+ * shift_jis / euc-jp を試し、最も化けの少ないものを採用する。
+ */
+export function decodeHtml(buf: Buffer, charset: string): string {
+  const primary = tryDecode(buf, charset) ?? tryDecode(buf, "utf-8") ?? "";
+  if (charset !== "utf-8" || badRatio(primary) <= 0.01) return primary;
+
+  let best = primary;
+  let bestRatio = badRatio(primary);
+  for (const cand of ["shift_jis", "euc-jp"]) {
+    const alt = tryDecode(buf, cand);
+    if (alt) {
+      const r = badRatio(alt);
+      if (r < bestRatio) {
+        best = alt;
+        bestRatio = r;
+      }
+    }
+  }
+  return best;
+}
+
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
 
@@ -318,7 +383,10 @@ export async function fetchProduct(url: string): Promise<ProductMeta> {
     if (!/html|xml/i.test(ct)) {
       return emptyMeta(normalized, "HTML ページではないため読み取れません");
     }
-    const html = await res.text();
+    // res.text() は常に UTF-8 デコードのため、Shift_JIS 等の日本語サイトが
+    // 文字化けする。バイト列を取得し、文字コードを判定してデコードする。
+    const buf = Buffer.from(await res.arrayBuffer());
+    const html = decodeHtml(buf, detectCharset(ct, buf));
     const meta = parseProduct(html, normalized);
     if (!meta.ok && !meta.error) {
       meta.error = "商品名・価格を自動取得できませんでした";
