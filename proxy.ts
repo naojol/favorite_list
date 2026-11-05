@@ -26,8 +26,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // 静的アセットと画像は除外
+  // 静的アセットと画像、キープアライブ(Cron が叩く。CRON_SECRET で自前認証)は除外
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/keepalive|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)$).*)",
   ],
 };

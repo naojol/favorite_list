@@ -15,6 +15,8 @@ import {
  * DB アクセスはサーバー(Server Actions / Server Components)からのみ。
  */
 export interface Store {
+  /** 接続確認（キープアライブ用）。失敗時は例外を投げる */
+  ping(): Promise<void>;
   listItems(): Promise<WishlistItem[]>;
   getItem(id: string): Promise<WishlistItem | null>;
   createItem(input: NewItemInput): Promise<WishlistItem>;
@@ -165,6 +167,10 @@ const COL_MAP: Record<string, string> = {
 
 function pgStore(): Store {
   return {
+    async ping() {
+      await getSql()`select 1`;
+    },
+
     async listItems() {
       await ensureSchema();
       const sql = getSql();
@@ -293,6 +299,10 @@ function mutate<T>(fn: (data: FileShape) => T): Promise<T> {
 
 function jsonStore(): Store {
   return {
+    async ping() {
+      // ローカル JSON は常に利用可能
+    },
+
     async listItems() {
       const data = await readData();
       return [...data.items].sort((a, b) =>

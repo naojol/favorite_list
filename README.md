@@ -63,6 +63,21 @@ Next.js なので Vercel にそのままデプロイできます。
 
 > Vercel のファイルシステムは一時的なので、本番では必ず `DATABASE_URL`（Supabase）を設定してください。未設定だとデータが保持されません。
 
+## しばらく使わないと表示されなくなる場合（Supabase の自動停止）
+
+Supabase の無料プランは、**低アクティビティが7日続くとプロジェクトが自動停止**されます（[公式ガイド](https://supabase.com/docs/guides/platform/free-project-pausing)）。停止中はアプリが DB に接続できず、「データベースに接続できません」画面になります。
+
+**復旧手順**
+1. Supabase ダッシュボードで該当プロジェクトを開き、「Paused」なら **Restore project** を押して数分待つ。
+2. アプリを再読み込み。
+3. 復元できない場合は、表示されるバックアップをダウンロードして新規プロジェクトに移行し、Vercel の `DATABASE_URL` を差し替えて Redeploy（テーブルは自動作成されます）。
+   ※ 復元可能な期間は公式資料でも記述が割れているので、**放置が長くなる前に復旧**してください。
+
+**再発防止（キープアライブ）**
+- `vercel.json` の Cron が毎日 `/api/keepalive` を呼び、DB に `select 1` を投げます。
+- Vercel の Environment Variables に **`CRON_SECRET`**（任意の長いランダム文字列）を設定すると有効になります。未設定だと `/api/keepalive` は 401 を返し、何もしません。
+- ⚠️ Supabase が「アクティビティ」をどう判定するかは公式に保証されていないため、**これで必ず防げるわけではありません**。確実にしたい場合は Pro プランにするか、大事なデータは定期的にバックアップしてください。
+
 ## パスワードロック（任意）
 
 個人の購入データを守るため、公開 URL には保護をおすすめします。`APP_PASSWORD` を設定すると `/login` でパスワードを要求します（httpOnly クッキー）。未設定なら認証なしで誰でも閲覧できます。
@@ -79,6 +94,7 @@ Amazon・楽天・Yahoo! ショッピングなどは、bot 対策や JavaScript 
 | --- | --- | --- |
 | `DATABASE_URL` | 本番で必須 | Supabase の Transaction pooler 接続文字列。未設定ならローカル JSON に保存。 |
 | `APP_PASSWORD` | 任意 | 設定するとパスワードロックを有効化。 |
+| `CRON_SECRET` | 推奨 | Vercel Cron のキープアライブ認証用。未設定なら `/api/keepalive` は無効（401）。 |
 
 ## プロジェクト構成
 
